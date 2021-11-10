@@ -2,9 +2,11 @@ import Head from "next/head";
 import Image from "next/image";
 import Header from "../components/Header/Header.jsx";
 import Navbar from "../components/Navbar/Navbar.jsx";
+import Results from "../components/Results/Results.jsx";
+import requests from "../util/requests.js";
 //import styles from "../styles/globals.css";
 
-export default function Home() {
+export default function Home({ results }) {
   return (
     <div>
       <Head>
@@ -14,9 +16,29 @@ export default function Home() {
       </Head>
 
       <Header />
-      {/** Navbar component  */}
+
       <Navbar />
-      {/** Results component */}
+      <Results results={results} />
     </div>
   );
+}
+
+//below function is rendered first
+// the context param allows us to see any query params / url routes
+//the JSX Home component is rendered after the getServerSideProps
+export async function getServerSideProps(context) {
+  const genre = context.query.genre;
+
+  //making a request to the TMDB database
+  const request = await fetch(
+    `https://api.themoviedb.org/3${
+      requests[genre]?.url || requests.fetchTrending.url
+    }`
+  ).then((res) => res.json());
+
+  return {
+    props: {
+      results: request.results,
+    },
+  };
 }
